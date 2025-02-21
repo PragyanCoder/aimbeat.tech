@@ -1,0 +1,93 @@
+Vercel Deployment Guide for aimbeat.tech Flask Application
+
+1. Prerequisites:
+   - A Vercel account (Sign up at vercel.com if you don't have one)
+   - Git repository with your Flask application
+   - Python 3.9+ installed locally
+
+2. Project Structure Requirements:
+   Ensure your project has:
+   - vercel.json (already configured in the project)
+   - requirements.txt or pyproject.toml (already present)
+   - main.py as the entry point (already configured)
+
+3. Deployment Steps:
+
+   A. Using Vercel CLI (Recommended):
+       1. Install Vercel CLI:
+          ```bash
+          npm install -g vercel
+          ```
+
+       2. Login to Vercel:
+          ```bash
+          vercel login
+          ```
+
+       3. Deploy from project directory:
+          ```bash
+          vercel
+          ```
+
+   B. Using Vercel Dashboard (Alternative):
+       1. Go to vercel.com and login
+       2. Click "New Project"
+       3. Import your Git repository
+       4. Select Python framework
+       5. Configure your project:
+          - Build Command: `pip install -r requirements.txt`
+          - Output Directory: `public`
+          - Install Command: Leave default
+          - Development Command: `python main.py`
+
+4. Environment Variables:
+   Set these in Vercel dashboard (Settings → Environment Variables):
+   - SESSION_SECRET: Generate a secure random string
+   - DATABASE_URL: Your PostgreSQL connection string
+   - FLASK_ENV: Set to 'production'
+
+5. Database Setup:
+   - Ensure your PostgreSQL database is accessible from Vercel
+   - Update DATABASE_URL in Vercel environment variables
+   - Tables will be created automatically on first deployment
+
+6. Post-Deployment Checks:
+   - Visit your deployed URL to verify the application works
+   - Test authentication flows
+   - Check database connections
+   - Verify all static assets are loading
+   - Test responsive design on different devices
+
+7. Troubleshooting:
+   A. Common Issues:
+       - 500 errors: Check environment variables
+       - Static files not loading: Verify vercel.json routes
+       - Database connection issues: Check DATABASE_URL format
+
+   B. Debugging:
+       - Use Vercel dashboard logs
+       - Check Functions → Your Function → Logs
+       - Enable debug mode temporarily if needed
+
+8. Production Optimizations:
+   - Enable Vercel Edge Cache
+   - Configure custom domains if needed
+   - Set up monitoring and alerts
+
+9. Maintenance:
+   - Monitor application performance
+   - Check Vercel dashboard for deployment status
+   - Keep dependencies updated
+   - Regularly backup database
+
+Remember:
+- Always test deployments in preview first
+- Keep sensitive data in environment variables
+- Monitor application logs for errors
+- Set up proper error handling and logging
+- Configure proper security headers
+
+For more help:
+- Vercel Documentation: https://vercel.com/docs
+- Flask on Vercel: https://vercel.com/guides/deploying-flask-with-vercel
+- PostgreSQL: https://vercel.com/docs/storage/vercel-postgres
