@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="services-hero">
+    <div class="hero-content">
+        <h1>Our Services</h1>
+        <p>Innovative solutions for modern challenges</p>
+    </div>
+</section>
+
+<section class="services-grid">
+    <div class="service-card">
+        <i class="fas fa-brain"></i>
+        <h3>AI/ML Solutions</h3>
+        <p>Custom artificial intelligence and machine learning solutions tailored to your business needs.</p>
+        <ul>
+            <li>Predictive Analytics</li>
+            <li>Natural Language Processing</li>
+            <li>Computer Vision</li>
+            <li>Deep Learning Models</li>
+        </ul>
+    </div>
+
+    <div class="service-card">
+        <i class="fas fa-code"></i>
+        <h3>Web Development</h3>
+        <p>Modern, responsive web applications built with cutting-edge technologies.</p>
+        <ul>
+            <li>Full-Stack Development</li>
+            <li>Progressive Web Apps</li>
+            <li>E-commerce Solutions</li>
+            <li>Custom Web Applications</li>
+        </ul>
+    </div>
+
+    <div class="service-card">
+        <i class="fas fa-cloud"></i>
+        <h3>SaaS Development</h3>
+        <p>Scalable software-as-a-service solutions for businesses of all sizes.</p>
+        <ul>
+            <li>Cloud Architecture</li>
+            <li>Subscription Management</li>
+            <li>API Development</li>
+            <li>Multi-tenant Applications</li>
+        </ul>
+    </div>
+
+    <div class="service-card">
+        <i class="fas fa-shield-alt"></i>
+        <h3>Cybersecurity</h3>
+        <p>Comprehensive security solutions to protect your digital assets.</p>
+        <ul>
+            <li>Security Audits</li>
+            <li>Penetration Testing</li>
+            <li>Secure Architecture Design</li>
+            <li>Compliance Implementation</li>
+        </ul>
+    </div>
+</section>
+
+<section class="process-section">
+    <h2>Our Process</h2>
+    <div class="process-timeline">
+        <div class="process-step">
+            <div class="step-number">1</div>
+            <h3>Discovery</h3>
+            <p>Understanding your requirements and objectives</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">2</div>
+            <h3>Planning</h3>
+            <p>Developing a strategic roadmap</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">3</div>
+            <h3>Development</h3>
+            <p>Building your solution with agile methodology</p>
+        </div>
+        <div class="process-step">
+            <div class="step-number">4</div>
+            <h3>Deployment</h3>
+            <p>Launching and maintaining your solution</p>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <h2>Ready to Start Your Project?</h2>
+    <p>Let's discuss how we can help you achieve your goals</p>
+    <a href="{{ url_for('index') }}#contact" class="btn-primary">Contact Us</a>
+</section>
+{% endblock %}
