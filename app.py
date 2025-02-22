@@ -10,10 +10,11 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Create the base class for SQLAlchemy models
 class Base(DeclarativeBase):
     pass
 
-db = SQLAlchemy(model_class=Base)
+# Initialize the Flask application
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
@@ -23,6 +24,9 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
+
+# Initialize the SQLAlchemy instance
+db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
 # Login manager setup
@@ -30,10 +34,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-from models import User
-
+# Import models inside the function to avoid circular import
 @login_manager.user_loader
 def load_user(user_id):
+    from models import User  # Importing here avoids circular import
     return User.query.get(int(user_id))
 
 # Routes
@@ -55,6 +59,7 @@ def login():
         password = request.form.get('password')
 
         try:
+            from models import User  # Importing here to avoid circular import
             user = User.query.filter_by(email=email).first()
 
             if user and check_password_hash(user.password_hash, password):
@@ -80,6 +85,8 @@ def signup():
             username = request.form.get('username')
             email = request.form.get('email')
             password = request.form.get('password')
+
+            from models import User  # Importing here to avoid circular import
 
             if User.query.filter_by(email=email).first():
                 flash('Email already registered')
@@ -122,6 +129,7 @@ def terms_conditions():
 def refund_policy():
     return render_template('policies/refund.html')
 
+# Create all database tables
 with app.app_context():
     db.create_all()
 
