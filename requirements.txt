@@ -7,6 +7,7 @@ flask-login
 
 charset-normalizer==3.4.1
 click==8.1.8
+flask_sqlalchemy
 colorama==0.4.6
 cryptography==38.0.4
 Faker==36.1.0
