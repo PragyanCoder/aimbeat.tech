@@ -1,47 +1,42 @@
 import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
+from flask_pymongo import PyMongo
+from bson.objectid import ObjectId
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define the Base class for SQLAlchemy
-class Base(DeclarativeBase):
-    pass
-
 # Initialize Flask
 app = Flask(__name__)
 app.secret_key = os.getenv("SESSION_SECRET", "dev-secret-key")
 
-# Database Configuration (Use PostgreSQL for Vercel)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/app.db")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+# MongoDB Configuration
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://PRAGYAN:PRAGYAN@cluster0.w3eiu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
-# Initialize database
-db = SQLAlchemy(model_class=Base)
-db.init_app(app)
+app.config["MONGO_URI"] = MONGO_URI
+mongo = PyMongo(app)
 
-# Import models inside app context to avoid circular import
-with app.app_context():
-    from models import User  # Import here after db is initialized
-    db.create_all()
-
-# Setup Flask-Login
+# Flask-Login Setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+# User Class for Authentication
+class User(UserMixin):
+    def __init__(self, user_data):
+        self.id = str(user_data["_id"])
+        self.username = user_data["username"]
+        self.email = user_data["email"]
+        self.password_hash = user_data["password_hash"]
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    user_data = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    return User(user_data) if user_data else None
 
 # Routes
 @app.route("/")
@@ -61,8 +56,9 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
+        user_data = mongo.db.users.find_one({"email": email})
+        if user_data and check_password_hash(user_data["password_hash"], password):
+            user = User(user_data)
             login_user(user)
             logger.info(f"User {email} logged in successfully")
             return redirect(url_for("index"))
@@ -82,17 +78,19 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        if User.query.filter_by(email=email).first():
+        existing_user = mongo.db.users.find_one({"email": email})
+        if existing_user:
             flash("Email already registered")
             return redirect(url_for("signup"))
 
-        user = User(
-            username=username,
-            email=email,
-            password_hash=generate_password_hash(password),
-        )
-        db.session.add(user)
-        db.session.commit()
+        user_data = {
+            "username": username,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+        }
+        result = mongo.db.users.insert_one(user_data)
+
+        user = User(user_data)
         login_user(user)
 
         logger.info(f"New user registered: {email}")
