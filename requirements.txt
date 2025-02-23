@@ -8,3 +8,5 @@ jinja2
 tzdata
 certifi
 urllib3
+
+gunicorn  
