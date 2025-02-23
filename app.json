@@ -4,7 +4,7 @@
   "repository": "https://github.com/your-repo-url",
   "keywords": ["python", "flask", "heroku"],
   "env": {
-    "FLASK_ENV": {
+    "FLASK_DEBUG": {
       "description": "Set to production for deployment",
       "value": "production"
     },
