@@ -6,6 +6,8 @@ requests
 werkzeug
 jinja2
 tzdata
+flask-pymongo
+
 certifi
 urllib3
 
