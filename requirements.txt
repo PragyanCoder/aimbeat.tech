@@ -27,7 +27,6 @@ mitmproxy==9.0.1
 mitmproxy-wireguard==0.1.23
 msgpack==1.0.8
 npm==0.1.1
-numpy==2.0.2
 opencv-python==4.11.0.86
 optional-django==0.1.0
 packaging==24.2
