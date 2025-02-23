@@ -1,137 +1,123 @@
 import os
+import logging
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create the base class for SQLAlchemy models
+# Define the Base class for SQLAlchemy
 class Base(DeclarativeBase):
     pass
 
-# Initialize the Flask application
+# Initialize Flask
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+app.secret_key = os.getenv("SESSION_SECRET", "dev-secret-key")
 
-# Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+# Database Configuration (Use PostgreSQL for Vercel)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/app.db")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 
-# Initialize the SQLAlchemy instance
+# Initialize database
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
-# Login manager setup
+# Import models inside app context to avoid circular import
+with app.app_context():
+    from models import User  # Import here after db is initialized
+    db.create_all()
+
+# Setup Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = "login"
 
-# Import models inside the function to avoid circular import
 @login_manager.user_loader
 def load_user(user_id):
-    from models import User  # Importing here avoids circular import
     return User.query.get(int(user_id))
 
 # Routes
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/services')
+@app.route("/services")
 def services():
-    return render_template('services.html')
+    return render_template("services.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for("index"))
 
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-        try:
-            from models import User  # Importing here to avoid circular import
-            user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            logger.info(f"User {email} logged in successfully")
+            return redirect(url_for("index"))
 
-            if user and check_password_hash(user.password_hash, password):
-                login_user(user)
-                logger.info(f"User {email} logged in successfully")
-                return redirect(url_for('index'))
+        flash("Invalid email or password")
+        logger.warning(f"Failed login attempt for email: {email}")
 
-            flash('Invalid email or password')
-            logger.warning(f"Failed login attempt for email: {email}")
-        except Exception as e:
-            logger.error(f"Login error: {str(e)}")
-            flash('An error occurred during login')
+    return render_template("auth/login.html")
 
-    return render_template('auth/login.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for("index"))
 
-    if request.method == 'POST':
-        try:
-            username = request.form.get('username')
-            email = request.form.get('email')
-            password = request.form.get('password')
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-            from models import User  # Importing here to avoid circular import
+        if User.query.filter_by(email=email).first():
+            flash("Email already registered")
+            return redirect(url_for("signup"))
 
-            if User.query.filter_by(email=email).first():
-                flash('Email already registered')
-                return redirect(url_for('signup'))
+        user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password),
+        )
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
 
-            user = User(
-                username=username,
-                email=email,
-                password_hash=generate_password_hash(password)
-            )
-            db.session.add(user)
-            db.session.commit()
+        logger.info(f"New user registered: {email}")
+        return redirect(url_for("index"))
 
-            login_user(user)
-            logger.info(f"New user registered: {email}")
-            return redirect(url_for('index'))
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Signup error: {str(e)}")
-            flash('An error occurred during registration')
+    return render_template("auth/signup.html")
 
-    return render_template('auth/signup.html')
-
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
 # Policy pages
-@app.route('/privacy-policy')
+@app.route("/privacy-policy")
 def privacy_policy():
-    return render_template('policies/privacy.html')
+    return render_template("policies/privacy.html")
 
-@app.route('/terms-conditions')
+@app.route("/terms-conditions")
 def terms_conditions():
-    return render_template('policies/terms.html')
+    return render_template("policies/terms.html")
 
-@app.route('/refund-policy')
+@app.route("/refund-policy")
 def refund_policy():
-    return render_template('policies/refund.html')
+    return render_template("policies/refund.html")
 
-# Create all database tables
-with app.app_context():
-    db.create_all()
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# Required for Vercel (Expose "application")
+application = app
