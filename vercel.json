@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "app.py",
+      "src": "main.py",
       "use": "@vercel/python"
     }
   ],
@@ -13,20 +13,12 @@
     },
     {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "main.py"
     }
   ],
-  "functions": {
-    "app.py": {
-      "runtime": "python3.9",
-      "maxDuration": 10,
-      "memory": 128
-    }
-  },
   "env": {
-    "FLASK_APP": "app.py",
-    "FLASK_ENV": "production",
-    "MONGO_URI": "mongodb+srv://PRAGYAN:PRAGYAN@cluster0.w3eiu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-  },
-  "ignoreCommand": "echo 'Skipping unnecessary files...'"
+    "PYTHONPATH": ".",
+    "FLASK_APP": "main.py",
+    "FLASK_ENV": "production"
+  }
 }
