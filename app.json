@@ -10,7 +10,7 @@
     },
     "DATABASE_URL": {
       "description": "Database connection URL (PostgreSQL recommended)",
-      "required": true
+      "required": false
     },
     "SECRET_KEY": {
       "description": "Secret key for Flask app",
