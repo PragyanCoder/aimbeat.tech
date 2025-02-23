@@ -1,0 +1,31 @@
+{
+  "name": "Flask App",
+  "description": "A Flask application deployed on Heroku",
+  "repository": "https://github.com/your-repo-url",
+  "keywords": ["python", "flask", "heroku"],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Set to production for deployment",
+      "value": "production"
+    },
+    "DATABASE_URL": {
+      "description": "Database connection URL (PostgreSQL recommended)",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for Flask app",
+      "generator": "secret"
+    }
+  },
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "python main.py"
+  }
+}
