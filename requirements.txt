@@ -1,1 +1,10 @@
 
+
+flask-login
+
+flask_sqlalchemy
+Faker==36.1.0
+Flask==2.2.5
+
+werkzeug==3.1.3
+
