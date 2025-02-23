@@ -17,8 +17,13 @@ db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
+# Fix: Handle PostgreSQL URL Format
+db_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -30,6 +35,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Import models **AFTER** db is initialized to avoid circular import
 from models import User
 
 @login_manager.user_loader
@@ -122,6 +128,7 @@ def terms_conditions():
 def refund_policy():
     return render_template('policies/refund.html')
 
+# Ensure database tables are created
 with app.app_context():
     db.create_all()
 
