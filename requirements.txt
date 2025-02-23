@@ -7,6 +7,7 @@ flask-login
 
 charset-normalizer==3.4.1
 click==8.1.8
+gunicorn
 flask_sqlalchemy
 psycopg2
 colorama==0.4.6
