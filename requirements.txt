@@ -6,3 +6,7 @@ jinja2==3.1.5
 werkzeug==3.1.3
 python-dotenv==1.0.1
 requests==2.32.3
+pillow==11.1.0  # Image processing for logos
+flask-assets  # Manages CSS and JS assets
+libsass  # Compiles SCSS to CSS if using Sass
+lottie==0.6.0
